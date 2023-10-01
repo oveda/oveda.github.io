@@ -5,10 +5,10 @@
     </q-card-section>
 
     <q-card-section>
-      <span>Numer of lanes</span>
+      <span>Numer of heats</span>
       <q-input
-        :model-value="numberOfLanes"
-        @update:model-value="onNumberOfLanesUpdated"
+        :model-value="numberOfHeats"
+        @update:model-value="onNumberOfHeatsUpdated"
         dense
         outlined
         type="number"
@@ -16,13 +16,29 @@
     </q-card-section>
 
     <q-card-section>
-      <span>Time between swimmer in lane (sec)</span>
+      <span>Time between heats (sec)</span>
       <q-input
-        :model-value="timeInSecBetweenSwimmer"
-        @update:model-value="onTimeIsSecBetweenSwimmerUpdated"
+        :model-value="startTimeInSecBetweenHeats"
+        @update:model-value="onTimeIsSecBetweenHeatsUpdated"
         dense
         outlined
         type="number"
+      />
+    </q-card-section>
+
+    <q-card-section>
+      <q-checkbox
+        :model-value="showSplitButtons"
+        @update:model-value="onToggleSplitButtons"
+        label="Show sidebar split buttons"
+      />
+    </q-card-section>
+
+    <q-card-section>
+      <q-checkbox
+        :model-value="!showIndividualHeatControlButtons"
+        @update:model-value="onToggleIndividualHeatControlButtons"
+        label="Show common control buttons"
       />
     </q-card-section>
   </q-card>
@@ -33,30 +49,50 @@ import { computed } from 'vue';
 import { LocalStorage } from 'quasar';
 import {
   useStopWatchModel,
-  NUMBER_OF_LANES_STORAGE_KEY,
-  TIME_IN_SEC_BETWEEN_SWIMMER_STORAGE_KEY,
+  NUMBER_OF_HEATS_STORAGE_KEY,
+  START_TIME_IN_SEC_STORAGE_KEY,
+  SHOW_SIDEBAR_SPLIT_BUTTONS,
+  SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS,
 } from '../models/stopWatchModel';
 
 const model = computed(() => {
   return useStopWatchModel();
 });
 
-const numberOfLanes = computed(() => {
-  return model.value.numberOfLanes;
+const numberOfHeats = computed(() => {
+  return model.value.numberOfHeats;
 });
 
-const timeInSecBetweenSwimmer = computed(() => {
-  return model.value.timeInSecBetweenSwimmer;
+const startTimeInSecBetweenHeats = computed(() => {
+  return model.value.startTimeInSec;
 });
 
-const onNumberOfLanesUpdated = (newValue: string | number | null) => {
-  model.value.numberOfLanes = newValue as number;
-  LocalStorage.set(NUMBER_OF_LANES_STORAGE_KEY, newValue);
+const showSplitButtons = computed(() => {
+  return model.value.showSidebarSplitButtons;
+});
+
+const showIndividualHeatControlButtons = computed(() => {
+  return model.value.showIndividualHeatControlButtons;
+});
+
+const onNumberOfHeatsUpdated = (newValue: string | number | null) => {
+  model.value.numberOfHeats = newValue as number;
+  LocalStorage.set(NUMBER_OF_HEATS_STORAGE_KEY, newValue);
 };
 
-const onTimeIsSecBetweenSwimmerUpdated = (newValue: string | number | null) => {
-  model.value.timeInSecBetweenSwimmer = newValue as number;
-  LocalStorage.set(TIME_IN_SEC_BETWEEN_SWIMMER_STORAGE_KEY, newValue);
+const onTimeIsSecBetweenHeatsUpdated = (newValue: string | number | null) => {
+  model.value.startTimeInSec = newValue as number;
+  LocalStorage.set(START_TIME_IN_SEC_STORAGE_KEY, newValue);
+};
+
+const onToggleSplitButtons = (newValue: boolean) => {
+  model.value.showSidebarSplitButtons = newValue;
+  LocalStorage.set(SHOW_SIDEBAR_SPLIT_BUTTONS, newValue);
+};
+
+const onToggleIndividualHeatControlButtons = (newValue: boolean) => {
+  model.value.showIndividualHeatControlButtons = !newValue;
+  LocalStorage.set(SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS, newValue);
 };
 </script>
 

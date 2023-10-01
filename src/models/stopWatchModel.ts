@@ -1,28 +1,47 @@
 import { reactive } from 'vue';
 import { LocalStorage } from 'quasar';
 
-export const NUMBER_OF_LANES_STORAGE_KEY = 'numberOfLanes';
-export const TIME_IN_SEC_BETWEEN_SWIMMER_STORAGE_KEY =
-  'timeInSecBetweenSwimmer';
+export const NUMBER_OF_HEATS_STORAGE_KEY = 'numberOfHeats';
+export const START_TIME_IN_SEC_STORAGE_KEY = 'startTimeInSec';
+export const SHOW_SIDEBAR_SPLIT_BUTTONS = 'showSidebarSplitButtons';
+export const SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS = 'showIndividualHeatButtons';
 
 class StopWatchModel {
-  numberOfLanes = 5;
-  timeInSecBetweenSwimmer = 10;
+  numberOfHeats = 4;
+  startTimeInSec = 10;
+  showSidebarSplitButtons = true;
+  showIndividualHeatControlButtons = false;
 
   constructor() {
-    const storedNumberOfLanes = LocalStorage.getItem(
-      NUMBER_OF_LANES_STORAGE_KEY
+    const storedNumberOfHeats = LocalStorage.getItem(
+      NUMBER_OF_HEATS_STORAGE_KEY
     );
-    const storedTimeInSecBetweenSwimmer = LocalStorage.getItem(
-      TIME_IN_SEC_BETWEEN_SWIMMER_STORAGE_KEY
+    const storedStartTimeInSec = LocalStorage.getItem(
+      START_TIME_IN_SEC_STORAGE_KEY
+    );
+    const storedShowSidebarSplitButtons = LocalStorage.getItem(
+      SHOW_SIDEBAR_SPLIT_BUTTONS
+    );
+    const storedShowIndividualHeatButtonsControlButtons = LocalStorage.getItem(
+      SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS
     );
 
-    if (storedNumberOfLanes) {
-      this.numberOfLanes = Number(storedNumberOfLanes);
+    if (storedNumberOfHeats) {
+      this.numberOfHeats = Number(storedNumberOfHeats);
     }
 
-    if (storedTimeInSecBetweenSwimmer) {
-      this.timeInSecBetweenSwimmer = Number(storedTimeInSecBetweenSwimmer);
+    if (storedStartTimeInSec) {
+      this.startTimeInSec = Number(storedStartTimeInSec);
+    }
+
+    if (storedShowSidebarSplitButtons) {
+      this.showSidebarSplitButtons = Boolean(storedShowSidebarSplitButtons);
+    }
+
+    if (storedShowIndividualHeatButtonsControlButtons) {
+      this.showIndividualHeatControlButtons = Boolean(
+        storedShowIndividualHeatButtonsControlButtons
+      );
     }
   }
 }

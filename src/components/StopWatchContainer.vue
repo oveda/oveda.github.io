@@ -1,153 +1,74 @@
 <template>
   <div class="row no-wrap absolute-full">
-    <div class="column" style="gap: 10px">
-      <q-btn
-        v-if="numberOfStopWatches > 0"
-        label="Split 1"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_1?.stopWatchRoundTime"
-        :disable="!stopWatch_1?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 1"
-        label="Split 2"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_2?.stopWatchRoundTime"
-        :disable="!stopWatch_2?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 2"
-        label="Split 3"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_3?.stopWatchRoundTime"
-        :disable="!stopWatch_3?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 3"
-        label="Split 4"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_4?.stopWatchRoundTime"
-        :disable="!stopWatch_4?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 4"
-        label="Split 5"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_5?.stopWatchRoundTime"
-        :disable="!stopWatch_5?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 5"
-        label="Split 6"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_6?.stopWatchRoundTime"
-        :disable="!stopWatch_6?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 6"
-        label="Split 7"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_7?.stopWatchRoundTime"
-        :disable="!stopWatch_7?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 7"
-        label="Split 8"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_8?.stopWatchRoundTime"
-        :disable="!stopWatch_8?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 8"
-        label="Split 9"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_9?.stopWatchRoundTime"
-        :disable="!stopWatch_9?.running"
-      />
-      <q-btn
-        v-if="numberOfStopWatches > 9"
-        label="Split 10"
-        color="primary"
-        class="split-button"
-        @click="stopWatch_10?.stopWatchRoundTime"
-        :disable="!stopWatch_10?.running"
-      />
-    </div>
-
     <div class="column no-wrap justify-between">
       <div class="row justify-center" style="overflow-y: auto">
         <StopWatch
           v-if="numberOfStopWatches > 0"
           ref="stopWatch_1"
-          :lane="1"
+          :heat="1"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 1"
           ref="stopWatch_2"
-          :lane="2"
+          :heat="2"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 2"
           ref="stopWatch_3"
-          :lane="3"
+          :heat="3"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 3"
           ref="stopWatch_4"
-          :lane="4"
+          :heat="4"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 4"
           ref="stopWatch_5"
-          :lane="5"
+          :heat="5"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 5"
           ref="stopWatch_6"
-          :lane="6"
+          :heat="6"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 6"
           ref="stopWatch_7"
-          :lane="7"
+          :heat="7"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 7"
           ref="stopWatch_8"
-          :lane="8"
+          :heat="8"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 8"
           ref="stopWatch_9"
-          :lane="9"
+          :heat="9"
           class="q-ma-sm stop-watch"
         />
         <StopWatch
           v-if="numberOfStopWatches > 9"
           ref="stopWatch_10"
-          :lane="10"
+          :heat="10"
           class="q-ma-sm stop-watch"
         />
       </div>
 
-      <div class="row no-wrap justify-center" style="height: 96px">
+      <div
+        v-if="!model.showIndividualHeatControlButtons"
+        class="row no-wrap justify-center"
+        style="height: 96px"
+      >
         <q-btn
           flat
           round
@@ -177,6 +98,90 @@
         />
       </div>
     </div>
+
+    <div v-if="model.showSidebarSplitButtons" class="column" style="gap: 10px">
+      <div style="font-weight: 500">Splits</div>
+      <q-btn
+        v-if="numberOfStopWatches > 0"
+        label="1"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_1?.stopWatchRoundTime"
+        :disable="!stopWatch_1?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 1"
+        label="2"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_2?.stopWatchRoundTime"
+        :disable="!stopWatch_2?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 2"
+        label="3"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_3?.stopWatchRoundTime"
+        :disable="!stopWatch_3?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 3"
+        label="4"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_4?.stopWatchRoundTime"
+        :disable="!stopWatch_4?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 4"
+        label="5"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_5?.stopWatchRoundTime"
+        :disable="!stopWatch_5?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 5"
+        label="6"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_6?.stopWatchRoundTime"
+        :disable="!stopWatch_6?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 6"
+        label="7"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_7?.stopWatchRoundTime"
+        :disable="!stopWatch_7?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 7"
+        label="8"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_8?.stopWatchRoundTime"
+        :disable="!stopWatch_8?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 8"
+        label="9"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_9?.stopWatchRoundTime"
+        :disable="!stopWatch_9?.running"
+      />
+      <q-btn
+        v-if="numberOfStopWatches > 9"
+        label="10"
+        color="primary"
+        class="split-button"
+        @click="stopWatch_10?.stopWatchRoundTime"
+        :disable="!stopWatch_10?.running"
+      />
+    </div>
   </div>
 </template>
 
@@ -205,11 +210,11 @@ const model = computed(() => {
 });
 
 const numberOfStopWatches = computed(() => {
-  return model.value.numberOfLanes;
+  return model.value.numberOfHeats;
 });
 
 const numberOfSecondsBetweenHeats = computed(() => {
-  return model.value.timeInSecBetweenSwimmer;
+  return model.value.startTimeInSec;
 });
 
 const startStopWatches = () => {
@@ -333,14 +338,15 @@ const clearAllStartTimers = () => {
 
 <style lang="scss" scoped>
 .stop-watch {
-  border: 1px solid black;
+  border: 1px solid grey;
   border-radius: 4px;
   padding: 4px;
+  min-width: 170px;
 }
 
 .split-button {
-  min-width: 100px;
-  min-height: 60px;
+  min-width: 50px;
+  min-height: 50px;
   margin-top: 4px;
 }
 </style>

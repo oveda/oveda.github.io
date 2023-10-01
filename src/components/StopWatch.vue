@@ -1,8 +1,42 @@
 <template>
   <div>
-    <div>Lane {{ props.lane }}</div>
-    <div class="full-width row justify-center text-h4">
+    <div>Heat {{ props.heat }}</div>
+    <div
+      class="full-width row justify-center text-h5"
+      @click="stopWatchRoundTime"
+      style="cursor: pointer"
+    >
       {{ currentStopWatchTime }}
+    </div>
+
+    <div v-if="model.showIndividualHeatControlButtons" class="row no-wrap">
+      <q-btn
+        flat
+        round
+        size="20px"
+        icon="play_arrow"
+        aria-label="Start"
+        @click="stopWatchStart"
+        :disable="running"
+      />
+      <q-btn
+        flat
+        round
+        size="20px"
+        icon="stop"
+        aria-label="Stop"
+        @click="stopWatchEnd"
+        :disable="!running"
+      />
+      <q-btn
+        flat
+        round
+        size="20px"
+        icon="replay"
+        aria-label="Reset"
+        @click="stopWatchReset"
+        :disable="running"
+      />
     </div>
 
     <div
@@ -10,22 +44,25 @@
       style="font-weight: 500"
       class="q-pt-md"
     >
-      Round times:
+      Swimmer times:
     </div>
 
-    <div v-for="roundTime in stopWatchRoundTimes" :key="roundTime">
-      {{ roundTime }}
+    <div class="round-times-container">
+      <div v-for="(roundTime, idx) in stopWatchRoundTimes" :key="roundTime">
+        {{ idx + 1 }} - {{ roundTime }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useStopWatchModel } from '../models/stopWatchModel';
 interface Props {
-  lane: number;
+  heat: number;
 }
 const props: Props = defineProps({
-  lane: {
+  heat: {
     type: Number,
     required: true,
   },
@@ -34,8 +71,12 @@ const props: Props = defineProps({
 const stopWatchStartTime = ref<Date | null>(null);
 const running = ref(false);
 const timer = ref<NodeJS.Timeout | null>(null);
-const currentStopWatchTime = ref<string>('00:00:00.000');
+const currentStopWatchTime = ref<string>('00:00.00');
 const stopWatchRoundTimes = ref<string[]>([]);
+
+const model = computed(() => {
+  return useStopWatchModel();
+});
 
 const stopWatchStart = () => {
   if (running.value) return;
@@ -61,7 +102,7 @@ const stopWatchReset = () => {
   if (running.value) return;
 
   stopWatchStartTime.value = null;
-  currentStopWatchTime.value = '00:00:00.000';
+  currentStopWatchTime.value = '00:00.00';
   stopWatchRoundTimes.value = [];
 };
 
@@ -78,19 +119,15 @@ const calcStopWatch = () => {
   const timeElapsed = new Date(
     currentTime.getTime() - stopWatchStartTime.value.getTime()
   );
-  const hour = timeElapsed.getUTCHours();
+  //const hour = timeElapsed.getUTCHours();
   const min = timeElapsed.getUTCMinutes();
   const sec = timeElapsed.getUTCSeconds();
   const ms = timeElapsed.getUTCMilliseconds();
 
   currentStopWatchTime.value =
-    zeroPrefix(hour, 2) +
-    ':' +
-    zeroPrefix(min, 2) +
-    ':' +
-    zeroPrefix(sec, 2) +
-    '.' +
-    zeroPrefix(ms, 3);
+    // zeroPrefix(hour, 2) +
+    // ':' +
+    zeroPrefix(min, 2) + ':' + zeroPrefix(sec, 2) + '.' + zeroPrefix(ms, 2);
 };
 
 const zeroPrefix = (num: number, digit: number) => {
@@ -110,5 +147,11 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.round-times-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+}
+</style>
 ```

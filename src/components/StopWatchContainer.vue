@@ -147,7 +147,7 @@
         />
       </div>
 
-      <div class="row justify-center" style="height: 96px">
+      <div class="row no-wrap justify-center" style="height: 96px">
         <q-btn
           flat
           round

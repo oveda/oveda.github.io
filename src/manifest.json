@@ -1,0 +1,5 @@
+{
+  "name": "Swimming StopWatch",
+  "display": "standalone",
+  "start_url": "/?standalone=true"
+}

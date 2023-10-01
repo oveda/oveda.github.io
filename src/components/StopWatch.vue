@@ -78,6 +78,10 @@ const model = computed(() => {
   return useStopWatchModel();
 });
 
+const numberOfResultColumns = computed(() => {
+  return model.value.numberOfResultColumns;
+});
+
 const stopWatchStart = () => {
   if (running.value) return;
 
@@ -150,7 +154,7 @@ defineExpose({
 <style lang="scss" scoped>
 .round-times-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(v-bind('numberOfResultColumns'), 1fr);
   grid-gap: 10px;
 }
 </style>

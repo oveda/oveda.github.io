@@ -1,5 +1,5 @@
 <template>
-  <div class="row no-wrap absolute-full">
+  <div class="row no-wrap justify-between absolute-full">
     <div class="column no-wrap justify-between">
       <div class="row justify-center" style="overflow-y: auto">
         <StopWatch

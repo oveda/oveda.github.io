@@ -40,16 +40,28 @@
     </div>
 
     <div
-      v-if="stopWatchRoundTimes.length"
+      v-if="currentRoundTimes && currentRoundTimes.length"
       style="font-weight: 500"
       class="q-pt-md"
     >
-      Swimmer times:
+      {{ running ? 'Swimmer times' : 'Summary' }}
     </div>
 
-    <div class="round-times-container">
-      <div v-for="(roundTime, idx) in stopWatchRoundTimes" :key="roundTime">
+    <div v-if="running || !model.autoStart" class="round-times-container">
+      <div v-for="(roundTime, idx) in currentRoundTimes" :key="roundTime">
         {{ idx + 1 }} - {{ roundTime }}
+      </div>
+    </div>
+
+    <div v-else>
+      <div v-for="[key, value] in stopWatchRoundTimes" :key="key">
+        <q-separator class="q-my-xs" />
+        <span>Round {{ key + 1 }}:</span>
+        <div class="round-times-container">
+          <div v-for="(roundTime, idx) in value" :key="roundTime">
+            {{ idx + 1 }} - {{ roundTime }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -72,10 +84,15 @@ const stopWatchStartTime = ref<Date | null>(null);
 const running = ref(false);
 const timer = ref<NodeJS.Timeout | null>(null);
 const currentStopWatchTime = ref<string>('00:00.00');
-const stopWatchRoundTimes = ref<string[]>([]);
+const stopWatchRoundTimes = ref<Map<number, string[]>>(new Map());
+const currentRoundIndex = ref<number>(0);
 
 const model = computed(() => {
   return useStopWatchModel();
+});
+
+const currentRoundTimes = computed(() => {
+  return stopWatchRoundTimes.value.get(currentRoundIndex.value);
 });
 
 const numberOfResultColumns = computed(() => {
@@ -87,6 +104,7 @@ const stopWatchStart = () => {
 
   running.value = true;
   stopWatchStartTime.value = new Date();
+  stopWatchRoundTimes.value.set(currentRoundIndex.value, []);
 
   timer.value = setInterval(() => calcStopWatch(), 20);
 };
@@ -107,13 +125,18 @@ const stopWatchReset = () => {
 
   stopWatchStartTime.value = null;
   currentStopWatchTime.value = '00:00.00';
-  stopWatchRoundTimes.value = [];
+  stopWatchRoundTimes.value.clear();
+  currentRoundIndex.value = 0;
 };
 
 const stopWatchRoundTime = () => {
   if (!running.value) return;
 
-  stopWatchRoundTimes.value.push(currentStopWatchTime.value);
+  const currentRoundStopTimes = stopWatchRoundTimes.value.get(
+    currentRoundIndex.value
+  );
+  currentRoundStopTimes &&
+    currentRoundStopTimes.push(currentStopWatchTime.value);
 };
 
 const calcStopWatch = () => {
@@ -123,15 +146,18 @@ const calcStopWatch = () => {
   const timeElapsed = new Date(
     currentTime.getTime() - stopWatchStartTime.value.getTime()
   );
-  //const hour = timeElapsed.getUTCHours();
   const min = timeElapsed.getUTCMinutes();
   const sec = timeElapsed.getUTCSeconds();
   const ms = timeElapsed.getUTCMilliseconds();
 
   currentStopWatchTime.value =
-    // zeroPrefix(hour, 2) +
-    // ':' +
     zeroPrefix(min, 2) + ':' + zeroPrefix(sec, 2) + '.' + zeroPrefix(ms, 2);
+
+  if (model.value.autoStart && sec >= model.value.autoStartIntervalInSec) {
+    stopWatchEnd();
+    currentRoundIndex.value = currentRoundIndex.value + 1;
+    stopWatchStart();
+  }
 };
 
 const zeroPrefix = (num: number, digit: number) => {
@@ -154,7 +180,7 @@ defineExpose({
 <style lang="scss" scoped>
 .round-times-container {
   display: grid;
-  grid-template-columns: repeat(v-bind('numberOfResultColumns'), 1fr);
+  grid-template-columns: repeat(v-bind('numberOfResultColumns'), 82px);
   grid-gap: 10px;
 }
 </style>

@@ -7,7 +7,7 @@
     <q-card-section>
       <span>Numer of heats</span>
       <q-input
-        :model-value="numberOfHeats"
+        :model-value="model.numberOfHeats"
         @update:model-value="onNumberOfHeatsUpdated"
         dense
         outlined
@@ -18,7 +18,7 @@
     <q-card-section>
       <span>Time between heats (sec)</span>
       <q-input
-        :model-value="startTimeInSecBetweenHeats"
+        :model-value="model.startTimeInSec"
         @update:model-value="onTimeIsSecBetweenHeatsUpdated"
         dense
         outlined
@@ -29,7 +29,7 @@
     <q-card-section>
       <span>Number of result columns</span>
       <q-input
-        :model-value="numberOfResultColumns"
+        :model-value="model.numberOfResultColumns"
         @update:model-value="onNumberOfResultColumnsUpdated"
         dense
         outlined
@@ -39,7 +39,26 @@
 
     <q-card-section>
       <q-checkbox
-        :model-value="showSplitButtons"
+        :model-value="model.autoStart"
+        @update:model-value="onToggleAutoStart"
+        label="Autostart heats"
+      />
+    </q-card-section>
+
+    <q-card-section>
+      <span>Autostart interval</span>
+      <q-input
+        :model-value="model.autoStartIntervalInSec"
+        @update:model-value="onAutoStartIntervalUpdated"
+        dense
+        outlined
+        type="number"
+      />
+    </q-card-section>
+
+    <q-card-section>
+      <q-checkbox
+        :model-value="model.showSidebarSplitButtons"
         @update:model-value="onToggleSplitButtons"
         label="Show sidebar split buttons"
       />
@@ -47,7 +66,7 @@
 
     <q-card-section>
       <q-checkbox
-        :model-value="showIndividualHeatControlButtons"
+        :model-value="model.showIndividualHeatControlButtons"
         @update:model-value="onToggleIndividualHeatControlButtons"
         label="Show individual heat control buttons"
       />
@@ -62,33 +81,15 @@ import {
   useStopWatchModel,
   NUMBER_OF_HEATS_STORAGE_KEY,
   START_TIME_IN_SEC_STORAGE_KEY,
-  SHOW_SIDEBAR_SPLIT_BUTTONS,
-  SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS,
-  NUMBER_OF_RESULT_COLUMNS,
+  SHOW_SIDEBAR_SPLIT_BUTTONS_STORAGE_KEY,
+  SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS_STORAGE_KEY,
+  NUMBER_OF_RESULT_COLUMNS_STORAGE_KEY,
+  AUTO_START_STORAGE_KEY,
+  AUTO_START_INTERVAL_IN_SEC_STORAGE_KEY,
 } from '../models/stopWatchModel';
 
 const model = computed(() => {
   return useStopWatchModel();
-});
-
-const numberOfHeats = computed(() => {
-  return model.value.numberOfHeats;
-});
-
-const startTimeInSecBetweenHeats = computed(() => {
-  return model.value.startTimeInSec;
-});
-
-const numberOfResultColumns = computed(() => {
-  return model.value.numberOfResultColumns;
-});
-
-const showSplitButtons = computed(() => {
-  return model.value.showSidebarSplitButtons;
-});
-
-const showIndividualHeatControlButtons = computed(() => {
-  return model.value.showIndividualHeatControlButtons;
 });
 
 const onNumberOfHeatsUpdated = (newValue: string | number | null) => {
@@ -103,19 +104,27 @@ const onTimeIsSecBetweenHeatsUpdated = (newValue: string | number | null) => {
 
 const onNumberOfResultColumnsUpdated = (newValue: string | number | null) => {
   model.value.numberOfResultColumns = newValue as number;
-  LocalStorage.set(NUMBER_OF_RESULT_COLUMNS, newValue);
+  LocalStorage.set(NUMBER_OF_RESULT_COLUMNS_STORAGE_KEY, newValue);
 };
 
 const onToggleSplitButtons = (newValue: boolean) => {
-  console.log('onToggleSplitButtons', newValue);
   model.value.showSidebarSplitButtons = newValue;
-  LocalStorage.set(SHOW_SIDEBAR_SPLIT_BUTTONS, newValue);
+  LocalStorage.set(SHOW_SIDEBAR_SPLIT_BUTTONS_STORAGE_KEY, newValue);
 };
 
 const onToggleIndividualHeatControlButtons = (newValue: boolean) => {
-  console.log('onToggleIndividualHeatControlButtons', newValue);
   model.value.showIndividualHeatControlButtons = newValue;
-  LocalStorage.set(SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS, newValue);
+  LocalStorage.set(SHOW_INDIVIDUAL_HEAT_CONTROL_BUTTONS_STORAGE_KEY, newValue);
+};
+
+const onToggleAutoStart = (newValue: boolean) => {
+  model.value.autoStart = newValue;
+  LocalStorage.set(AUTO_START_STORAGE_KEY, newValue);
+};
+
+const onAutoStartIntervalUpdated = (newValue: string | number | null) => {
+  model.value.autoStartIntervalInSec = newValue as number;
+  LocalStorage.set(AUTO_START_INTERVAL_IN_SEC_STORAGE_KEY, newValue);
 };
 </script>
 

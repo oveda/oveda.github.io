@@ -153,7 +153,11 @@ const calcStopWatch = () => {
   currentStopWatchTime.value =
     zeroPrefix(min, 2) + ':' + zeroPrefix(sec, 2) + '.' + zeroPrefix(ms, 2);
 
-  if (model.value.autoStart && sec >= model.value.autoStartIntervalInSec) {
+  const timeElapedInSec = timeElapsed.getTime() / 1000;
+  if (
+    model.value.autoStart &&
+    timeElapedInSec >= model.value.autoStartIntervalInSec
+  ) {
     stopWatchEnd();
     currentRoundIndex.value = currentRoundIndex.value + 1;
     stopWatchStart();

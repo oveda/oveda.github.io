@@ -1,5 +1,6 @@
 {
-  "name": "Swimming StopWatch",
+  "name": "Swimming Stop Watch",
+  "short_name": "Swimming Stop Watch",
   "display": "standalone",
   "start_url": "/?standalone=true",
   "background_color": "#ffffff",

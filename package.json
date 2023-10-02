@@ -1,9 +1,9 @@
 {
-  "name": "swimstopwatch",
+  "name": "swimmingstopwatch",
   "version": "0.0.1",
   "description": "A stopwatch for swimming",
   "productName": "Swimming Stop Watch",
-  "author": "",
+  "author": "Øyvind Vedå",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
@@ -12,7 +12,7 @@
     "dev": "quasar dev -m pwa",
     "build": "quasar build -m pwa",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist/spa"
+    "deploy": "gh-pages -d dist/pwa"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",

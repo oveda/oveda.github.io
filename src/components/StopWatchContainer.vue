@@ -345,8 +345,8 @@ const clearAllStartTimers = () => {
 }
 
 .split-button {
-  min-width: 50px;
-  min-height: 50px;
+  min-width: 75px;
+  min-height: 75px;
   margin-top: 4px;
 }
 </style>

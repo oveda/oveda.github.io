@@ -5,7 +5,7 @@
     </q-card-section>
 
     <q-card-section>
-      <span>Numer of heats</span>
+      <span>Max number of swimmers in lane</span>
       <q-input
         :model-value="model.numberOfHeats"
         @update:model-value="onNumberOfHeatsUpdated"
@@ -16,7 +16,7 @@
     </q-card-section>
 
     <q-card-section>
-      <span>Time between heats (sec)</span>
+      <span>Time between swimmers in lane (sec)</span>
       <q-input
         :model-value="model.startTimeInSec"
         @update:model-value="onTimeIsSecBetweenHeatsUpdated"
@@ -41,7 +41,7 @@
       <q-checkbox
         :model-value="model.autoStart"
         @update:model-value="onToggleAutoStart"
-        label="Autostart heats"
+        label="Autostart swimmer times"
       />
     </q-card-section>
 
@@ -53,6 +53,7 @@
         dense
         outlined
         type="number"
+        :readonly="!model.autoStart"
       />
     </q-card-section>
 
@@ -68,7 +69,7 @@
       <q-checkbox
         :model-value="model.showIndividualHeatControlButtons"
         @update:model-value="onToggleIndividualHeatControlButtons"
-        label="Show individual heat control buttons"
+        label="Show individual swimmer control buttons"
       />
     </q-card-section>
   </q-card>

@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div>Heat {{ props.heat }}</div>
+    <div>
+      {{ getOrdinalSuffix(props.heat) }} swimmer in lane
+    </div>
     <div
       class="full-width row justify-center text-h5"
       @click="stopWatchRoundTime"
@@ -48,8 +50,8 @@
     </div>
 
     <div v-if="running || !model.autoStart" class="round-times-container">
-      <div v-for="(roundTime, idx) in currentRoundTimes" :key="roundTime">
-        {{ idx + 1 }} - {{ roundTime }}
+      <div v-for="roundTime in currentRoundTimes" :key="roundTime">
+        {{ roundTime }}
       </div>
     </div>
 
@@ -58,8 +60,8 @@
         <q-separator class="q-my-xs" />
         <span>Round {{ key + 1 }}:</span>
         <div class="round-times-container">
-          <div v-for="(roundTime, idx) in value" :key="roundTime">
-            {{ idx + 1 }} - {{ roundTime }}
+          <div v-for="roundTime in value" :key="roundTime">
+            {{ roundTime }}
           </div>
         </div>
       </div>
@@ -170,6 +172,26 @@ const zeroPrefix = (num: number, digit: number) => {
     zero += '0';
   }
   return (zero + num).slice(-digit);
+};
+
+const getOrdinalSuffix = (num: number) => {
+  const lastDigit = num % 10;
+  const lastTwoDigits = num % 100;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+    return num + 'th';
+  }
+
+  switch (lastDigit) {
+    case 1:
+      return num + 'st';
+    case 2:
+      return num + 'nd';
+    case 3:
+      return num + 'rd';
+    default:
+      return num + 'th';
+  }
 };
 
 defineExpose({

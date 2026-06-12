@@ -3,6 +3,17 @@
     <q-header elevated>
       <q-toolbar>
         <q-btn
+          v-if="showSettingsDrawer"
+          flat
+          dense
+          round
+          icon="arrow_back"
+          aria-label="Home"
+          @click="goHome"
+        />
+
+        <q-btn
+          v-if="showSettingsDrawer"
           flat
           dense
           round
@@ -11,14 +22,15 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> Swimming Stop Watch </q-toolbar-title>
+        <q-toolbar-title> PoolCoach </q-toolbar-title>
 
-        <div>v0.1</div>
+        <div>v0.2</div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <TimingSettings />
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered v-if="showSettingsDrawer">
+      <TimingSettings v-if="settingsMode === 'stopwatch'" />
+      <BeepTestSettings v-else-if="settingsMode === 'beep-test'" />
     </q-drawer>
 
     <q-page-container>
@@ -28,12 +40,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import TimingSettings from 'pages/TimingSettings.vue';
+import BeepTestSettings from 'pages/BeepTestSettings.vue';
 
 const leftDrawerOpen = ref(false);
+const router = useRouter();
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
+
+function goHome() {
+  void router.push('/');
+}
+
+const route = useRoute();
+
+const settingsMode = computed<'stopwatch' | 'beep-test' | 'none'>(() => {
+  const path = route.path || '';
+  if (path.startsWith('/stopwatch')) return 'stopwatch';
+  if (path.startsWith('/beep-test')) return 'beep-test';
+  return 'none';
+});
+
+const showSettingsDrawer = computed(() => settingsMode.value !== 'none');
+
+watch(
+  () => route.path,
+  () => {
+    leftDrawerOpen.value = false;
+  }
+);
 </script>

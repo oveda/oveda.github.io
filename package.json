@@ -1,8 +1,8 @@
 {
-  "name": "swimmingstopwatch",
+  "name": "poolcoach",
   "version": "0.0.1",
-  "description": "A stopwatch for swimming",
-  "productName": "Swimming Stop Watch",
+  "description": "Poolside coaching timer with stopwatch and beep test",
+  "productName": "PoolCoach",
   "author": "Øyvind Vedå",
   "private": true,
   "scripts": {

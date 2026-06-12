@@ -1,6 +1,6 @@
 {
-  "name": "Swimming Stop Watch",
-  "short_name": "Swimming Stop Watch",
+  "name": "PoolCoach",
+  "short_name": "PoolCoach",
   "display": "standalone",
   "start_url": "/?standalone=true",
   "background_color": "#ffffff",

@@ -1,7 +1,7 @@
 <template>
   <q-page class="row items-center justify-center">
     <div class="column items-center q-gutter-md">
-      <div class="text-h5">Swimming Stop Watch</div>
+      <div class="text-h5">PoolCoach</div>
       <div class="text-subtitle2 text-grey-7">Choose a mode</div>
 
       <div class="row q-gutter-md">
@@ -30,3 +30,4 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const go = (path: string) => router.push(path);
 </script>
+

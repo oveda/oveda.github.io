@@ -1,40 +1,33 @@
-# Swimming Stop Watch (swimstopwatch)
+# PoolCoach
 
-A stopwatch for swimming
+A poolside coaching PWA with two modes:
+
+- **Stopwatch** — lap timer with splits for individual swimmers
+- **Beep test** — interval timer for multiple swimmers with staggered starts, configurable target time, decrement per round, and audible countdown signals
 
 ## Install the dependencies
 ```bash
-yarn
-# or
 npm install
 ```
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 ```bash
-quasar dev
+npm run dev
 ```
-
 
 ### Lint the files
 ```bash
-yarn lint
-# or
 npm run lint
 ```
 
-
 ### Format the files
 ```bash
-yarn format
-# or
 npm run format
 ```
 
-
-
-### Build the app for production
+### Build and deploy to GitHub Pages
 ```bash
-quasar build
+npm run deploy
 ```
 
 ### Customize the configuration

@@ -4,7 +4,7 @@
       <div class="text-h5">PoolCoach</div>
       <div class="text-subtitle2 text-grey-7">Choose a mode</div>
 
-      <div class="row q-gutter-md">
+      <div class="row justify-center q-gutter-md">
         <q-btn
           color="primary"
           size="lg"

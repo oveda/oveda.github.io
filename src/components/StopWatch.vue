@@ -11,6 +11,10 @@
       {{ currentStopWatchTime }}
     </div>
 
+    <div v-if="running && model.autoStart" class="full-width row justify-center text-caption text-grey-7">
+      Lap {{ currentRoundIndex + 1 }}
+    </div>
+
     <div v-if="model.showIndividualHeatControlButtons" class="row no-wrap">
       <q-btn
         flat

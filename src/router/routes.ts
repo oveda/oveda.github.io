@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/ModeSelectPage.vue') },
       { path: 'stopwatch', component: () => import('pages/StopwatchPage.vue') },
       { path: 'beep-test', component: () => import('pages/BeepTestPage.vue') },
+      { path: 'test2000', component: () => import('pages/Test2000Page.vue') },
     ],
   },
 

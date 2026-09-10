@@ -19,6 +19,13 @@
           label="Beep test"
           @click="go('/beep-test')"
         />
+        <q-btn
+          color="accent"
+          size="lg"
+          icon="pool"
+          label="2000m test"
+          @click="go('/test2000')"
+        />
       </div>
     </div>
   </q-page>

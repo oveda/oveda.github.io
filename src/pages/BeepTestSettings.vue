@@ -50,18 +50,12 @@
 
     <q-card-section>
       <div class="q-mb-sm">Sound style</div>
-      <q-btn-toggle
+      <q-option-group
         :model-value="model.soundStyle"
         @update:model-value="onSoundStyleUpdated"
         :options="soundStyleOptions"
-        spread
-        no-caps
-        unelevated
-        rounded
-        color="grey-3"
-        text-color="dark"
-        toggle-color="primary"
-        toggle-text-color="white"
+        type="radio"
+        color="primary"
       />
     </q-card-section>
   </q-card>
@@ -84,6 +78,10 @@ const model = useBeepTestModel();
 const soundStyleOptions = [
   { label: 'Chirp', value: 'chirp' },
   { label: 'Beep', value: 'beep' },
+  { label: 'Alarm', value: 'alarm' },
+  { label: 'Horn', value: 'horn' },
+  { label: 'Siren', value: 'siren' },
+  { label: 'Thump', value: 'thump' },
 ];
 
 const onTargetTimeUpdated = (v: string | number | null) => {

@@ -84,18 +84,35 @@ const overlay = reactive<OverlayState>({ visible: false, title: '', number: 3 })
 
 // Persistent AudioContext — avoids cold-start latency on each beep
 let audioCtx: AudioContext | null = null;
+// Shared output bus: everything runs through a limiter so the loud "alarm"
+// style can be driven hard without harsh digital clipping, and instead
+// gets squashed into a dense, consistently loud signal (same trick alarms/
+// broadcast audio use to sound louder on small speakers).
+let masterGain: GainNode | null = null;
+let limiter: DynamicsCompressorNode | null = null;
 
 const initAudio = () => {
   if (audioCtx) return;
   try {
     const w = window as unknown as { webkitAudioContext?: typeof AudioContext };
     const Ctor = window.AudioContext || w.webkitAudioContext;
-    if (Ctor) audioCtx = new Ctor();
+    if (!Ctor) return;
+    audioCtx = new Ctor();
+    limiter = audioCtx.createDynamicsCompressor();
+    limiter.threshold.value = -24;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.1;
+    limiter.connect(audioCtx.destination);
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(limiter);
   } catch { /* no-op */ }
 };
 
 const ensureAudio = () => {
-  if (!audioCtx) return false;
+  if (!audioCtx || !masterGain) return false;
   if (audioCtx.state === 'suspended') void audioCtx.resume();
   return true;
 };
@@ -113,7 +130,7 @@ const playChirp = (fromHz: number, toHz: number, durationSec: number, gain: numb
   g.gain.setValueAtTime(gain, t);
   g.gain.exponentialRampToValueAtTime(0.001, t + durationSec);
   osc.connect(g);
-  g.connect(audioCtx!.destination);
+  g.connect(masterGain!);
   osc.start(t);
   osc.stop(t + durationSec);
 };
@@ -132,7 +149,7 @@ const playGoChirp = () => {
     g.gain.setValueAtTime(0.4, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + pulseSec);
     osc.connect(g);
-    g.connect(audioCtx!.destination);
+    g.connect(masterGain!);
     osc.start(t);
     osc.stop(t + pulseSec);
   }
@@ -149,13 +166,176 @@ const playFlatBeep = (hz: number, durationSec: number, gain: number) => {
   g.gain.setValueAtTime(gain, t);
   g.gain.exponentialRampToValueAtTime(0.001, t + durationSec);
   osc.connect(g);
-  g.connect(audioCtx!.destination);
+  g.connect(masterGain!);
   osc.start(t);
   osc.stop(t + durationSec);
 };
 
 // GO signal (beep mode): long sustained sine beep — traditional buzzer feel.
 const playGoBeep = () => playFlatBeep(1400, 0.6, 0.35);
+
+// Sharp square-wave pulse — used for alarm mode. Square waves are rich in
+// high harmonics (like a smoke detector/referee whistle) and sit in the
+// 2-3 kHz range where the ear is most sensitive, so they cut through pool
+// echo and splash noise far better than the sine/sawtooth tones above.
+const playAlarmPulse = (hz: number, durationSec: number, gain: number) => {
+  if (!ensureAudio()) return;
+  const t = audioCtx!.currentTime;
+  const osc = audioCtx!.createOscillator();
+  const g = audioCtx!.createGain();
+  osc.type = 'square';
+  osc.frequency.value = hz;
+  g.gain.setValueAtTime(gain, t);
+  g.gain.setValueAtTime(gain, t + durationSec * 0.7);
+  g.gain.exponentialRampToValueAtTime(0.001, t + durationSec);
+  osc.connect(g);
+  g.connect(masterGain!);
+  osc.start(t);
+  osc.stop(t + durationSec);
+};
+
+// GO signal (alarm mode): rapid two-tone siren warble, the classic
+// emergency-alarm pattern — much harder to miss/tune out than a steady tone.
+const playGoAlarm = () => {
+  if (!ensureAudio()) return;
+  const hiHz = 2800;
+  const loHz = 1800;
+  const stepSec = 0.09;
+  const steps = 8;
+  for (let i = 0; i < steps; i++) {
+    const t = audioCtx!.currentTime + i * stepSec;
+    const osc = audioCtx!.createOscillator();
+    const g = audioCtx!.createGain();
+    osc.type = 'square';
+    osc.frequency.value = i % 2 === 0 ? hiHz : loHz;
+    g.gain.setValueAtTime(0.9, t);
+    g.gain.setValueAtTime(0.9, t + stepSec * 0.85);
+    g.gain.exponentialRampToValueAtTime(0.001, t + stepSec);
+    osc.connect(g);
+    g.connect(masterGain!);
+    osc.start(t);
+    osc.stop(t + stepSec);
+  }
+};
+
+const playTone = (type: OscillatorType, hz: number, durationSec: number, gain: number, sustainFrac = 0.7) => {
+  if (!ensureAudio()) return;
+  const t = audioCtx!.currentTime;
+  const osc = audioCtx!.createOscillator();
+  const g = audioCtx!.createGain();
+  osc.type = type;
+  osc.frequency.value = hz;
+  g.gain.setValueAtTime(gain, t);
+  g.gain.setValueAtTime(gain, t + durationSec * sustainFrac);
+  g.gain.exponentialRampToValueAtTime(0.001, t + durationSec);
+  osc.connect(g);
+  g.connect(masterGain!);
+  osc.start(t);
+  osc.stop(t + durationSec);
+};
+
+// Horn mode: a layered fundamental + a closely-dissonant second tone (the
+// beating/roughness of real air horns) plus a high presence layer. Aimed at
+// external/Bluetooth speakers rather than phone speakers — those have real
+// bass extension, so a sustained full-range chord carries far more total
+// acoustic energy than a short high-pitched pulse ever could.
+const playHornChord = (durationSec: number, gain: number) => {
+  playTone('sawtooth', 175, durationSec, gain, 0.75);
+  playTone('sawtooth', 233, durationSec, gain * 0.85, 0.75);
+  playTone('square', 2400, durationSec, gain * 0.6, 0.75);
+};
+
+// GO signal (horn mode): a full second of sustained chord — maximizes total
+// energy delivered rather than relying on a sharp, short attack.
+const playGoHorn = () => playHornChord(1.0, 0.9);
+
+// Siren mode: a rising/falling pitch glide, like an emergency vehicle —
+// continuous pitch movement is harder for the ear to tune out over time
+// than a repeated static tone, which matters most on speakers loud enough
+// to run for several rounds in a row.
+const playSirenSweep = (fromHz: number, toHz: number, durationSec: number, gain: number) => {
+  if (!ensureAudio()) return;
+  const t = audioCtx!.currentTime;
+  const osc = audioCtx!.createOscillator();
+  const g = audioCtx!.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(fromHz, t);
+  osc.frequency.linearRampToValueAtTime(toHz, t + durationSec);
+  g.gain.setValueAtTime(gain, t);
+  g.gain.setValueAtTime(gain, t + durationSec * 0.85);
+  g.gain.exponentialRampToValueAtTime(0.001, t + durationSec);
+  osc.connect(g);
+  g.connect(masterGain!);
+  osc.start(t);
+  osc.stop(t + durationSec);
+};
+
+// GO signal (siren mode): two full up-down glide cycles — a sustained whoop
+// rather than a single blip, for maximum "impossible to miss" effect.
+const playGoSiren = () => {
+  if (!ensureAudio()) return;
+  const t = audioCtx!.currentTime;
+  const osc = audioCtx!.createOscillator();
+  const g = audioCtx!.createGain();
+  osc.type = 'sawtooth';
+  const low = 500;
+  const high = 1600;
+  const legSec = 0.3;
+  osc.frequency.setValueAtTime(low, t);
+  osc.frequency.linearRampToValueAtTime(high, t + legSec);
+  osc.frequency.linearRampToValueAtTime(low, t + legSec * 2);
+  osc.frequency.linearRampToValueAtTime(high, t + legSec * 3);
+  osc.frequency.linearRampToValueAtTime(low, t + legSec * 4);
+  const totalSec = legSec * 4;
+  g.gain.setValueAtTime(0.9, t);
+  g.gain.setValueAtTime(0.9, t + totalSec * 0.9);
+  g.gain.exponentialRampToValueAtTime(0.001, t + totalSec);
+  osc.connect(g);
+  g.connect(masterGain!);
+  osc.start(t);
+  osc.stop(t + totalSec);
+};
+
+// Thump mode: a percussive click transient plus a fast pitch-dropping
+// sub-bass body, like a starting-gun/kick-drum boom. Felt as much as heard —
+// exploits the deep bass extension many portable Bluetooth speakers are
+// tuned for, and low frequencies carry/are felt through a pool hall better
+// than highs.
+const playThumpAt = (startOffsetSec: number, durationSec: number, gain: number) => {
+  if (!ensureAudio()) return;
+  const t = audioCtx!.currentTime + startOffsetSec;
+
+  const clickOsc = audioCtx!.createOscillator();
+  const clickGain = audioCtx!.createGain();
+  clickOsc.type = 'square';
+  clickOsc.frequency.value = 900;
+  clickGain.gain.setValueAtTime(gain * 0.5, t);
+  clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+  clickOsc.connect(clickGain);
+  clickGain.connect(masterGain!);
+  clickOsc.start(t);
+  clickOsc.stop(t + 0.02);
+
+  const osc = audioCtx!.createOscillator();
+  const g = audioCtx!.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, t);
+  osc.frequency.exponentialRampToValueAtTime(45, t + durationSec);
+  g.gain.setValueAtTime(gain, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + durationSec);
+  osc.connect(g);
+  g.connect(masterGain!);
+  osc.start(t);
+  osc.stop(t + durationSec);
+};
+
+const playThump = (durationSec: number, gain: number) => playThumpAt(0, durationSec, gain);
+
+// GO signal (thump mode): a double boom for extra weight/emphasis
+const playGoThump = () => {
+  playThumpAt(0, 0.3, 0.95);
+  playThumpAt(0.22, 0.4, 0.95);
+};
 
 // Beep fires once per displayed countdown digit; resets when overlay hides
 let lastPlayedNumber = -1;
@@ -339,7 +519,27 @@ const updateOverlayAndSounds = () => {
   // Sound once per digit change: 3 → 2 → 1 → 0 (GO)
   if (number !== lastPlayedNumber) {
     lastPlayedNumber = number;
-    if (model.soundStyle === 'beep') {
+    if (model.soundStyle === 'thump') {
+      // Thump mode: single boom for 3-2-1, double boom for GO
+      if (number === 0) playGoThump();
+      else if (number === 1) playThump(0.22, 0.9);
+      else playThump(0.16, 0.75);
+    } else if (model.soundStyle === 'siren') {
+      // Siren mode: short whoop blips for 3-2-1, full glide cycles for GO
+      if (number === 0) playGoSiren();
+      else if (number === 1) playSirenSweep(700, 1500, 0.22, 0.85);
+      else playSirenSweep(600, 1200, 0.16, 0.7);
+    } else if (model.soundStyle === 'horn') {
+      // Horn mode: short punchy chord blasts for 3-2-1, long sustained chord for GO
+      if (number === 0) playGoHorn();
+      else if (number === 1) playHornChord(0.22, 0.85);
+      else playHornChord(0.16, 0.7);
+    } else if (model.soundStyle === 'alarm') {
+      // Alarm mode: loud square-wave pulses building to a siren-warble GO signal
+      if (number === 0) playGoAlarm();
+      else if (number === 1) playAlarmPulse(2600, 0.18, 0.85);
+      else playAlarmPulse(2000, 0.15, 0.75);
+    } else if (model.soundStyle === 'beep') {
       // Beep mode: 3 and 2 share the same frequency, 1 is higher, 0 is a long buzzer
       if (number === 0) playGoBeep();
       else if (number === 1) playFlatBeep(1200, 0.2, 0.3);
@@ -434,6 +634,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateFontSize);
   void audioCtx?.close();
   audioCtx = null;
+  masterGain = null;
+  limiter = null;
 });
 </script>
 

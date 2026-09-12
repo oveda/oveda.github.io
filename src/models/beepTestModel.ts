@@ -7,7 +7,9 @@ export const BEEP_HEATS_PER_ROUND_STORAGE_KEY = 'beepHeatsPerRound';
 export const BEEP_HEAT_DELAY_SEC_STORAGE_KEY = 'beepHeatDelaySec';
 export const BEEP_SOUND_STYLE_STORAGE_KEY = 'beepSoundStyle';
 
-export type SoundStyle = 'chirp' | 'beep';
+export type SoundStyle = 'chirp' | 'beep' | 'alarm' | 'horn' | 'siren' | 'thump';
+
+const VALID_SOUND_STYLES: SoundStyle[] = ['chirp', 'beep', 'alarm', 'horn', 'siren', 'thump'];
 
 class BeepTestModel {
   targetTimeSec = 60;
@@ -27,7 +29,7 @@ class BeepTestModel {
     if (decrementPerRoundSec != null) this.decrementPerRoundSec = Number(decrementPerRoundSec);
     if (heatsPerRound != null) this.heatsPerRound = Number(heatsPerRound);
     if (heatDelaySec != null) this.heatDelaySec = Number(heatDelaySec);
-    if (soundStyle === 'beep' || soundStyle === 'chirp') this.soundStyle = soundStyle;
+    if (VALID_SOUND_STYLES.includes(soundStyle as SoundStyle)) this.soundStyle = soundStyle as SoundStyle;
   }
 }
 

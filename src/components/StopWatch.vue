@@ -76,6 +76,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useStopWatchModel } from '../models/stopWatchModel';
+import { useWakeLock } from '../composables/useWakeLock';
 interface Props {
   heat: number;
 }
@@ -88,6 +89,7 @@ const props: Props = defineProps({
 
 const stopWatchStartTime = ref<Date | null>(null);
 const running = ref(false);
+useWakeLock(running);
 const timer = ref<NodeJS.Timeout | null>(null);
 const currentStopWatchTime = ref<string>('00:00.00');
 const stopWatchRoundTimes = ref<Map<number, string[]>>(new Map());

@@ -22,15 +22,26 @@
         :key="heatIdx"
         flat
         class="heat-card"
+        :class="{ 'heat-card-muted': mutedHeats.has(heatIdx) }"
       >
         <!-- Plain div so we control the flex layout fully -->
         <div class="card-body">
-          <!-- Top: label + round info -->
+          <!-- Top: label + round info + mark-out toggle -->
           <div class="card-top row justify-between items-baseline">
             <span class="heat-label">{{ heatLabel(heatIdx + 1) }}</span>
-            <span class="round-info text-grey-7">
-              Round {{ heatRoundIndex(heatIdx) + 1 }} · {{ formatMMSS(heatTargetSec(heatIdx)) }}
-            </span>
+            <div class="row items-center q-gutter-xs">
+              <span class="round-info text-grey-7">
+                Round {{ heatRoundIndex(heatIdx) + 1 }} · {{ formatMMSS(heatTargetSec(heatIdx)) }}
+              </span>
+              <q-btn
+                flat dense round size="sm"
+                :icon="mutedHeats.has(heatIdx) ? 'volume_off' : 'volume_up'"
+                :color="mutedHeats.has(heatIdx) ? 'negative' : 'grey-6'"
+                @click="toggleMute(heatIdx)"
+              >
+                <q-tooltip>{{ mutedHeats.has(heatIdx) ? 'Swimmer marked out — tap to re-include' : 'Mark swimmer out (mute + stop timer)' }}</q-tooltip>
+              </q-btn>
+            </div>
           </div>
 
           <!-- Middle: timer centred in all available space -->
@@ -70,10 +81,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useBeepTestModel } from 'src/models/beepTestModel';
+import { useWakeLock } from 'src/composables/useWakeLock';
 
 const model = useBeepTestModel();
 
 const running = ref(false);
+useWakeLock(running);
 const baseStartMs = ref<number | null>(null);
 // Reactive clock — every tick sets this, driving all template re-renders
 const nowMs = ref(Date.now());
@@ -81,6 +94,13 @@ const tickTimer = ref<ReturnType<typeof setInterval> | null>(null);
 
 type OverlayState = { visible: boolean; title: string; number: number };
 const overlay = reactive<OverlayState>({ visible: false, title: '', number: 3 });
+
+// Heats marked "out" — their sound is silenced and their timer stops advancing
+const mutedHeats = reactive<Set<number>>(new Set());
+const toggleMute = (heatIdx: number) => {
+  if (mutedHeats.has(heatIdx)) mutedHeats.delete(heatIdx);
+  else mutedHeats.add(heatIdx);
+};
 
 // Persistent AudioContext — avoids cold-start latency on each beep
 let audioCtx: AudioContext | null = null;
@@ -429,6 +449,7 @@ const isPreStart = (heatIdx: number) => {
 };
 
 const heatDisplay = (heatIdx: number) => {
+  if (mutedHeats.has(heatIdx)) return 'OUT';
   if (!running.value || baseStartMs.value == null) {
     return formatMMSS(targetForRoundIndexSec(0));
   }
@@ -444,6 +465,7 @@ const heatDisplay = (heatIdx: number) => {
 
 // Secondary line shown below the main timer for active rounds only
 const heatNextEventStr = (heatIdx: number): string => {
+  if (mutedHeats.has(heatIdx)) return 'Marked out';
   if (!running.value || baseStartMs.value == null) return '';
   const hn = heatNowMs(heatIdx);
   // Pre-start: main display already shows the countdown as a negative number
@@ -474,6 +496,7 @@ const updateOverlayAndSounds = () => {
   let bestJustStarted: { heatIdx: number; elapsedMs: number } | null = null;
 
   for (let heatIdx = 0; heatIdx < heatsArr.value.length; heatIdx++) {
+    if (mutedHeats.has(heatIdx)) continue;
     const hn = heatNowMs(heatIdx);
 
     if (hn < baseStartMs.value) {
@@ -564,6 +587,7 @@ const start = () => {
   running.value = true;
   baseStartMs.value = Date.now() + 3000;
   lastPlayedNumber = -1;
+  mutedHeats.clear();
   tick();
   tickTimer.value = setInterval(tick, 50);
 };
@@ -572,6 +596,7 @@ const stop = () => {
   running.value = false;
   baseStartMs.value = null;
   overlay.visible = false;
+  mutedHeats.clear();
   if (tickTimer.value) {
     clearInterval(tickTimer.value);
     tickTimer.value = null;
@@ -668,6 +693,10 @@ onBeforeUnmount(() => {
   height: 100%;
   border: 1px solid grey;
   border-radius: 4px;
+}
+
+.heat-card-muted {
+  opacity: 0.45;
 }
 
 // Inner layout: flex column so timer-wrap can grow

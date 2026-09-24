@@ -113,6 +113,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useTest2000Model } from 'src/models/test2000Model';
+import { useWakeLock } from 'src/composables/useWakeLock';
 
 const model = useTest2000Model();
 
@@ -133,6 +134,7 @@ const buildFromConfig = (): Swimmer[] =>
     .map((name) => ({ name, laps: 0, lapTimestamps: [], finished: false, finishMs: null }));
 
 const running = ref(false);
+useWakeLock(running);
 const baseStartMs = ref<number | null>(null);
 const nowMs = ref(Date.now());
 const tickTimer = ref<ReturnType<typeof setInterval> | null>(null);
